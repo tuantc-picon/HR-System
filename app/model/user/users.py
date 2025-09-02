@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 
-from app.model.base import DateTimeMixin, HRSystemBase
+from model.base import DateTimeMixin, HRSystemBase
 
 
 class User(HRSystemBase, DateTimeMixin):

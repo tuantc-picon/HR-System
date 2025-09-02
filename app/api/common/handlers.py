@@ -6,8 +6,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from app.core.common.loggers import logger
-from app.core.common.exceptions import HRSystemBaseException
+from core.common.loggers import logger
+from core.common.exceptions import HRSystemBaseException
 
 
 def base_error_handler(request: Request, exception: HRSystemBaseException):

@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, Column, ForeignKey, Text
 
-from app.model.base import DateTimeMixin, HRSystemBase
+from model.base import DateTimeMixin, HRSystemBase
 
 
 class Application(HRSystemBase, DateTimeMixin):

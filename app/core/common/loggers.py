@@ -1,6 +1,6 @@
 import logging
 
-from app.config import LOGGER_LEVEL, LOGGER_FORMAT, SQLALCHEMY_LOG_LEVEL
+from config import LOGGER_LEVEL, LOGGER_FORMAT, SQLALCHEMY_LOG_LEVEL
 
 LOGGING_CONFIG = {
     "version": 1,

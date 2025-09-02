@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, ForeignKey
 
-from app.model.base import DateTimeMixin, HRSystemBase
+from model.base import DateTimeMixin, HRSystemBase
 
 
 class JobRequirementBlackList(HRSystemBase, DateTimeMixin):

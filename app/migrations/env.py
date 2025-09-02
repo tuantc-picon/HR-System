@@ -14,9 +14,9 @@ parent_dir = os.path.dirname(os.path.dirname(current_dir))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from app.model.base import HRSystemBase
-from app.model import * # noqa: F401, F403
-from app.config import DATABASE_CONN_URL
+from model.base import HRSystemBase
+from model import * # noqa: F401, F403
+from config import DATABASE_CONN_URL
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

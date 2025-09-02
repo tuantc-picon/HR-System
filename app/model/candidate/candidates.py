@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, Column, String, Text
 
-from app.model.base import DateTimeMixin, HRSystemBase
+from model.base import DateTimeMixin, HRSystemBase
 
 
 class Candidate(HRSystemBase, DateTimeMixin):

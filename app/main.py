@@ -8,7 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 import config
 
 from api.common.handlers import base_error_handler, sqlalchemy_exception_handler, validation_exception_handler
-from app.api.v1.routers import router
+from api.v1.routers import router
 from core.common.exceptions import HRSystemBaseException
 
 app = FastAPI(
