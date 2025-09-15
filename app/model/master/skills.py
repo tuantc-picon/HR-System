@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Integer, String, Column, Boolean
 
-from model.base import DateTimeMixin, HRSystemBase
+from model.base import HRSystemBase, DateTimeMixin
 
 
-class Role(HRSystemBase, DateTimeMixin):
-    __tablename__ = "m_roles"
+class Skill(HRSystemBase, DateTimeMixin):
+    __tablename__ = "m_skills"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False, unique=True)

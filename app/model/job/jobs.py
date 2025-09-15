@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy import Column, Integer, String, Text
 
 from model.base import DateTimeMixin, HRSystemBase
 

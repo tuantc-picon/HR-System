@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from model.master.roles import Role
+from model.master.user_roles import UserRole as Role
 from services.base_service import BaseService
 from schema.request.role_schemas import RoleCreateRequest, RoleUpdateRequest
 from core.common.exceptions import HRSystemBaseException
