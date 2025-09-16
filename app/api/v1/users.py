@@ -2,6 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.common.database import get_db_session
+from core.middleware.auth_middleware import get_current_active_user
+from model.user.users import User
 from services.user_service import user_service
 from schema.request.user_schemas import UserCreateRequest, UserUpdateRequest
 from schema.response.user_schemas import UserResponse
@@ -13,7 +15,8 @@ router = APIRouter()
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(
     user_data: UserCreateRequest,
-    db: Session = Depends(get_db_session)
+    db: Session = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user)
 ):
     """Create a new user"""
     try:

@@ -61,8 +61,14 @@ API_PORT = int(os.getenv("API_PORT"))
 
 GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
 
+# Google API Scopes
+GMAIL_SCOPES = [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/drive.file'
+]
+
 LANGUAGE_MESSAGE = "ja"
 DEFAULT_TIMEZONE_SERVER = os.getenv("DEFAULT_TIMEZONE_SERVER", "UTC")
 DEFAULT_TIMEZONE_USER = os.getenv("DEFAULT_TIMEZONE_USER", "Asia/Tokyo")
 
-UPLOAD_CLOUD_TARGET = os.getenv("UPLOAD_CLOUD_TARGET", "false")
+UPLOAD_CLOUD_TARGET = os.getenv("UPLOAD_CLOUD_TARGET", "false").lower() == "true"

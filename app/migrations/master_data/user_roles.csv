@@ -1,0 +1,6 @@
+name,description
+Admin,System Administrator with full access
+HR Manager,HR Manager with access to HR functions
+Recruiter,Recruiter with access to recruitment functions
+Interviewer,Interviewer with access to interview functions
+Employee,Regular employee with limited access

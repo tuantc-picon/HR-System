@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 class CertificateCategoryEnum(IntEnum):
@@ -9,6 +9,14 @@ class CertificateCategoryEnum(IntEnum):
     CLOUD = 4
     TECHNICAL = 5
     OTHER = 6
+
+
+class MasterDataTypeEnum(str, Enum):
+    """Master data types for API endpoints"""
+    CERTIFICATES = "certificates"
+    JOB_ROLES = "job_roles"
+    SKILLS = "skills"
+    USER_ROLES = "user_roles"
 
 
 

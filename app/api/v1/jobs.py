@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from core.common.database import get_db_session
 from services.job_service import job_service
 from schema.request.job_schemas import JobCreateRequest, JobUpdateRequest
-from schema.response.job_schemas import JobResponse
+from schema.response.job_schemas import JobResponse, JobWithDetailsResponse
 
 router = APIRouter()
 
@@ -14,29 +14,56 @@ def create_job(
     job_data: JobCreateRequest,
     db: Session = Depends(get_db_session)
 ):
-    """Create a new job"""
-    job = job_service.create_job(db, job_data)
-    return job
+    """Create a new job with requirements, skills, and certificates"""
+    job_result = job_service.create_job(db, job_data)
+    return job_result["job"]
 
 
-@router.get("/", response_model=List[JobResponse])
+@router.get("/", response_model=List[JobWithDetailsResponse])
 def get_jobs(
     skip: int = 0,
     limit: int = 100,
+    include_details: bool = True,
     db: Session = Depends(get_db_session)
 ):
-    """Get all jobs"""
-    jobs = job_service.get_all(db, skip=skip, limit=limit)
-    return jobs
+    """Get all jobs with optional details"""
+    if include_details:
+        jobs_with_details = job_service.get_all_with_details(db, skip=skip, limit=limit)
+        result = []
+        for job_data in jobs_with_details:
+            # Get additional details for each job
+            skills = job_service.get_job_skills(db, job_data["job"].id)
+            certificates = job_service.get_job_certificates(db, job_data["job"].id)
+            black_lists = job_service.get_job_black_lists(db, job_data["job"].id)
+
+            # Build response
+            response_data = {
+                **job_data["job"].__dict__,
+                "job_role": job_data["job_role"],
+                "job_requirements": job_data["job_requirements"],
+                "skills": skills,
+                "certificates": certificates,
+                "black_lists": black_lists
+            }
+            result.append(JobWithDetailsResponse(**response_data))
+        return result
+    else:
+        jobs = job_service.get_all(db, skip=skip, limit=limit)
+        return [JobResponse.model_validate(job) for job in jobs]
 
 
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(
     job_id: int,
+    include_details: bool = False,
     db: Session = Depends(get_db_session)
 ):
-    """Get job by ID"""
-    job = job_service.get_by_id(db, job_id)
+    """Get job by ID with optional details"""
+    if include_details:
+        job = job_service.get_job_with_details(db, job_id)
+    else:
+        job = job_service.get_by_id(db, job_id)
+
     if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -51,14 +78,14 @@ def update_job(
     job_data: JobUpdateRequest,
     db: Session = Depends(get_db_session)
 ):
-    """Update job"""
-    job = job_service.update_job(db, job_id, job_data)
-    if not job:
+    """Update job with requirements, skills, and certificates"""
+    job_result = job_service.update_job(db, job_id, job_data)
+    if not job_result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found"
         )
-    return job
+    return job_result["job"]
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -112,4 +139,45 @@ def search_jobs_by_title(
 ):
     """Search jobs by title keyword"""
     jobs = job_service.search_jobs_by_title(db, title_keyword)
+    return jobs
+
+
+@router.get("/{job_id}/details", response_model=JobWithDetailsResponse)
+def get_job_with_details(
+    job_id: int,
+    db: Session = Depends(get_db_session)
+):
+    """Get job with full details including job role, requirements, skills, certificates, and black lists"""
+    job_details = job_service.get_job_with_details(db, job_id)
+    if not job_details:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
+    # Get additional details
+    skills = job_service.get_job_skills(db, job_id)
+    certificates = job_service.get_job_certificates(db, job_id)
+    black_lists = job_service.get_job_black_lists(db, job_id)
+
+    # Build response
+    response_data = {
+        **job_details["job"].__dict__,
+        "job_role": job_details["job_role"],
+        "job_requirements": job_details["job_requirements"],
+        "skills": skills,
+        "certificates": certificates,
+        "black_lists": black_lists
+    }
+
+    return JobWithDetailsResponse(**response_data)
+
+
+@router.get("/role/{job_role_id}", response_model=List[JobResponse])
+def get_jobs_by_role(
+    job_role_id: int,
+    db: Session = Depends(get_db_session)
+):
+    """Get jobs by job role"""
+    jobs = job_service.get_jobs_by_role(db, job_role_id)
     return jobs

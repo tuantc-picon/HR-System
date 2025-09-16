@@ -3,6 +3,7 @@ from .user_service import user_service
 from .role_service import role_service
 from .certificate_service import certificate_service
 from .black_list_service import black_list_service
+from .skill_service import skill_service
 from .job_service import job_service
 from .job_requirement_service import job_requirement_service
 from .candidate_service import candidate_service
