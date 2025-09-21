@@ -15,7 +15,7 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 from model.base import HRSystemBase
-from model import * # noqa: F401, F403
+from model import *  # noqa: F401, F403
 from config import DATABASE_CONN_URL
 
 # this is the Alembic Config object, which provides
@@ -79,9 +79,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

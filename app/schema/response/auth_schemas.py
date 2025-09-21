@@ -4,6 +4,7 @@ from typing import Dict, Any
 
 class UserInfo(BaseModel):
     """User information schema"""
+
     id: int
     email: str
     first_name: str
@@ -13,6 +14,7 @@ class UserInfo(BaseModel):
 
 class LoginResponse(BaseModel):
     """Schema for login response"""
+
     access_token: str
     refresh_token: str
     token_type: str
@@ -21,5 +23,6 @@ class LoginResponse(BaseModel):
 
 class RefreshTokenResponse(BaseModel):
     """Schema for refresh token response"""
+
     access_token: str
     token_type: str

@@ -33,6 +33,7 @@ class BadRequestException(HRSystemBaseException):
     def __init__(self, status_code=status.HTTP_400_BAD_REQUEST, message=None, **kwargs):
         super().__init__(status_code, message or _("Bad request!"), **kwargs)
 
+
 class UnAuthenticateException(HRSystemBaseException):
     def __init__(
         self, status_code=status.HTTP_401_UNAUTHORIZED, message=None, **kwargs

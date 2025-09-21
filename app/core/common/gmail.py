@@ -20,14 +20,21 @@ class MyGmail:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", GMAIL_SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    "credentials.json", GMAIL_SCOPES
+                )
                 creds = flow.run_local_server(port=0)
             with open("token.json", "w") as token:
                 token.write(creds.to_json())
         return build("gmail", "v1", credentials=creds)
 
     async def process_emails(service, user_id="me", max_results=5):
-        results = service.users().messages().list(userId=user_id, maxResults=max_results).execute()
+        results = (
+            service.users()
+            .messages()
+            .list(userId=user_id, maxResults=max_results)
+            .execute()
+        )
         messages = results.get("messages", [])
 
         if not messages:
@@ -36,7 +43,9 @@ class MyGmail:
 
         for msg in messages:
             msg_id = msg["id"]
-            message = service.users().messages().get(userId=user_id, id=msg_id).execute()
+            message = (
+                service.users().messages().get(userId=user_id, id=msg_id).execute()
+            )
 
             if not is_cv_email(message):
                 continue
@@ -51,9 +60,13 @@ class MyGmail:
             for part in parts:
                 if part.get("filename"):
                     att_id = part["body"]["attachmentId"]
-                    att = service.users().messages().attachments().get(
-                        userId=user_id, messageId=msg_id, id=att_id
-                    ).execute()
+                    att = (
+                        service.users()
+                        .messages()
+                        .attachments()
+                        .get(userId=user_id, messageId=msg_id, id=att_id)
+                        .execute()
+                    )
                     data = att["data"]
                     file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
 

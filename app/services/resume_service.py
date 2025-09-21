@@ -15,19 +15,22 @@ class ResumeService(BaseService[Resume]):
         resume_dict = resume_data.model_dump()
         return self.create(db, resume_dict)
 
-    def update_resume(self, db: Session, resume_id: int, resume_data: ResumeUpdateRequest) -> Optional[Resume]:
+    def update_resume(
+        self, db: Session, resume_id: int, resume_data: ResumeUpdateRequest
+    ) -> Optional[Resume]:
         """Update resume"""
         resume_dict = resume_data.model_dump(exclude_unset=True)
         return self.update(db, resume_id, resume_dict)
 
     def get_resumes_by_candidate(self, db: Session, candidate_id: int) -> List[Resume]:
         """Get all resumes for a specific candidate"""
-        return db.query(Resume).filter(
-            and_(
-                Resume.candidate_id == candidate_id,
-                Resume.deleted_at.is_(None)
+        return (
+            db.query(Resume)
+            .filter(
+                and_(Resume.candidate_id == candidate_id, Resume.deleted_at.is_(None))
             )
-        ).all()
+            .all()
+        )
 
     def get_resume_by_file_path(self, db: Session, file_path: str) -> Optional[Resume]:
         """Get resume by file path"""

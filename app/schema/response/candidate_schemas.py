@@ -11,6 +11,7 @@ class CandidateResponse(BaseModel):
     last_name: str
     birth_date: str
     phone_number: str
+    is_blocklisted: bool
     note: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -23,6 +24,7 @@ class CandidateResponse(BaseModel):
 
 class CandidateWithResumeResponse(BaseModel):
     """Response model for candidate creation with CV upload"""
+
     candidate: CandidateResponse
     resume: Optional[ResumeResponse] = None
     upload_info: Optional[dict] = None

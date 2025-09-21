@@ -8,6 +8,7 @@ class CandidateCreateRequest(BaseModel):
     last_name: str
     birth_date: str
     phone_number: str
+    is_blocklisted: Optional[bool] = False
     note: Optional[str] = None
 
 
@@ -17,4 +18,5 @@ class CandidateUpdateRequest(BaseModel):
     last_name: Optional[str] = None
     birth_date: Optional[str] = None
     phone_number: Optional[str] = None
+    is_blocklisted: Optional[bool] = None
     note: Optional[str] = None

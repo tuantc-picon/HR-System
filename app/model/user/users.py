@@ -18,6 +18,3 @@ class User(HRSystemBase, DateTimeMixin):
 
     # Relationships
     jwt_tokens = relationship("JWTToken", back_populates="user")
-
-
-

@@ -10,4 +10,3 @@ class Resume(HRSystemBase, DateTimeMixin):
     candidate_id = Column(ForeignKey("t_candidates.id"), nullable=False)
     file_path = Column(String, nullable=False)
     note = Column(String, nullable=True)
-

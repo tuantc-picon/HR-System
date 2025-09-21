@@ -10,4 +10,6 @@ class BlackList(HRSystemBase, DateTimeMixin):
     name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    category = Column(Integer, default=1, nullable=False, comment="1: Candidate, 3: Company")
+    category = Column(
+        Integer, default=1, nullable=False, comment="1: Candidate, 3: Company"
+    )

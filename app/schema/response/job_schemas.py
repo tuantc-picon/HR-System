@@ -5,6 +5,7 @@ from typing import Optional, List
 
 class JobRoleInfo(BaseModel):
     """Basic job role information for job response"""
+
     id: int
     name: str
     description: Optional[str] = None
@@ -16,6 +17,7 @@ class JobRoleInfo(BaseModel):
 
 class JobRequirementInfo(BaseModel):
     """Basic job requirement information for job response"""
+
     id: int
     min_experience: Optional[int] = None
     max_experience: Optional[int] = None
@@ -33,6 +35,8 @@ class JobResponse(BaseModel):
     job_role_id: Optional[int] = None
     area: int
     employment_type: int
+    status: int
+    application_deadline: Optional[datetime] = None
     description: Optional[str] = None
     source: Optional[int] = None
     created_by: Optional[int] = None
@@ -47,6 +51,7 @@ class JobResponse(BaseModel):
 
 class SkillInfo(BaseModel):
     """Basic skill information for job response"""
+
     id: int
     name: str
     description: Optional[str] = None
@@ -58,6 +63,7 @@ class SkillInfo(BaseModel):
 
 class CertificateInfo(BaseModel):
     """Basic certificate information for job response"""
+
     id: int
     name: str
     description: Optional[str] = None
@@ -70,6 +76,7 @@ class CertificateInfo(BaseModel):
 
 class BlackListInfo(BaseModel):
     """Basic black list information for job response"""
+
     id: int
     name: str
     description: Optional[str] = None
@@ -82,11 +89,14 @@ class BlackListInfo(BaseModel):
 
 class JobWithDetailsResponse(BaseModel):
     """Extended job response with full details"""
+
     id: int
     title: str
     job_role_id: Optional[int] = None
     area: int
     employment_type: int
+    status: int
+    application_deadline: Optional[datetime] = None
     description: Optional[str] = None
     source: Optional[int] = None
     created_by: Optional[int] = None

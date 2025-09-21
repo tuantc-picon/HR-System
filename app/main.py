@@ -7,7 +7,11 @@ from starlette.middleware.cors import CORSMiddleware
 
 import config
 
-from api.common.handlers import base_error_handler, sqlalchemy_exception_handler, validation_exception_handler
+from api.common.handlers import (
+    base_error_handler,
+    sqlalchemy_exception_handler,
+    validation_exception_handler,
+)
 from api.v1.routers import router
 from core.common.exceptions import HRSystemBaseException
 
@@ -31,7 +35,6 @@ app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(Exception, base_error_handler)
 
 app.include_router(router, prefix="/api")
-
 
 
 if __name__ == "__main__":

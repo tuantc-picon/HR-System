@@ -17,6 +17,7 @@ try:
     from googleapiclient.http import MediaIoBaseUpload
     from config import GMAIL_SCOPES
     import io
+
     GOOGLE_DRIVE_AVAILABLE = True
 except ImportError:
     GOOGLE_DRIVE_AVAILABLE = False
@@ -26,13 +27,13 @@ class FileUploadService:
     """
     Service for handling file uploads to both local storage and Google Drive
     """
-    
+
     def __init__(self):
         self.upload_dir = BASE_DIR / "uploads"
         self.upload_dir.mkdir(exist_ok=True)
         self.credentials_file = "credentials.json"
         self.token_file = "token.json"
-        
+
     def _authenticate_google_drive(self):
         """Authenticate with Google Drive API and return service client"""
         if not GOOGLE_DRIVE_AVAILABLE:
@@ -45,12 +46,14 @@ class FileUploadService:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, GMAIL_SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    self.credentials_file, GMAIL_SCOPES
+                )
                 creds = flow.run_local_server(port=0)
             with open(self.token_file, "w") as token:
                 token.write(creds.to_json())
         return build("drive", "v3", credentials=creds)
-    
+
     def _generate_unique_filename(self, original_filename: str) -> str:
         """Generate a unique filename to avoid conflicts"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -58,15 +61,17 @@ class FileUploadService:
         file_extension = Path(original_filename).suffix
         base_name = Path(original_filename).stem
         return f"{base_name}_{timestamp}_{unique_id}{file_extension}"
-    
-    async def upload_file_local(self, file: UploadFile, subfolder: str = "resumes") -> Dict[str, Any]:
+
+    async def upload_file_local(
+        self, file: UploadFile, subfolder: str = "resumes"
+    ) -> Dict[str, Any]:
         """
         Upload file to local storage
-        
+
         Args:
             file: The uploaded file
             subfolder: Subfolder within uploads directory
-            
+
         Returns:
             Dict containing file information
         """
@@ -74,19 +79,19 @@ class FileUploadService:
             # Create subfolder if it doesn't exist
             subfolder_path = self.upload_dir / subfolder
             subfolder_path.mkdir(exist_ok=True)
-            
+
             # Generate unique filename
             unique_filename = self._generate_unique_filename(file.filename)
             file_path = subfolder_path / unique_filename
-            
+
             # Save file
             content = await file.read()
             with open(file_path, "wb") as f:
                 f.write(content)
-            
+
             # Return relative path from uploads directory
             relative_path = f"{subfolder}/{unique_filename}"
-            
+
             return {
                 "success": True,
                 "file_path": relative_path,
@@ -94,17 +99,15 @@ class FileUploadService:
                 "filename": unique_filename,
                 "original_filename": file.filename,
                 "size": len(content),
-                "storage_type": "local"
+                "storage_type": "local",
             }
-            
+
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "storage_type": "local"
-            }
-    
-    async def upload_file_google_drive(self, file: UploadFile, folder_name: str = "HR_System_Resumes") -> Dict[str, Any]:
+            return {"success": False, "error": str(e), "storage_type": "local"}
+
+    async def upload_file_google_drive(
+        self, file: UploadFile, folder_name: str = "HR_System_Resumes"
+    ) -> Dict[str, Any]:
         """
         Upload file to Google Drive
 
@@ -120,7 +123,7 @@ class FileUploadService:
                 return {
                     "success": False,
                     "error": "Google Drive libraries are not available",
-                    "storage_type": "google_drive"
+                    "storage_type": "google_drive",
                 }
 
             service = self._authenticate_google_drive()
@@ -136,75 +139,78 @@ class FileUploadService:
             file_stream = io.BytesIO(content)
 
             # Upload file
-            file_metadata = {
-                'name': unique_filename,
-                'parents': [folder_id]
-            }
+            file_metadata = {"name": unique_filename, "parents": [folder_id]}
 
             media = MediaIoBaseUpload(
                 file_stream,
-                mimetype=file.content_type or 'application/octet-stream',
-                resumable=True
+                mimetype=file.content_type or "application/octet-stream",
+                resumable=True,
             )
 
-            uploaded_file = service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id,name,webViewLink,webContentLink'
-            ).execute()
+            uploaded_file = (
+                service.files()
+                .create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields="id,name,webViewLink,webContentLink",
+                )
+                .execute()
+            )
 
             return {
                 "success": True,
-                "file_path": uploaded_file.get('webViewLink'),
-                "file_id": uploaded_file.get('id'),
-                "download_link": uploaded_file.get('webContentLink'),
+                "file_path": uploaded_file.get("webViewLink"),
+                "file_id": uploaded_file.get("id"),
+                "download_link": uploaded_file.get("webContentLink"),
                 "filename": unique_filename,
                 "original_filename": file.filename,
                 "size": len(content),
                 "storage_type": "google_drive",
-                "folder_id": folder_id
+                "folder_id": folder_id,
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "storage_type": "google_drive"
-            }
-    
+            return {"success": False, "error": str(e), "storage_type": "google_drive"}
+
     def _get_or_create_folder(self, service, folder_name: str) -> str:
         """Get existing folder or create new one in Google Drive"""
         if not GOOGLE_DRIVE_AVAILABLE:
             raise ImportError("Google Drive libraries are not available")
 
         # Search for existing folder
-        results = service.files().list(
-            q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'",
-            fields="files(id, name)"
-        ).execute()
+        results = (
+            service.files()
+            .list(
+                q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'",
+                fields="files(id, name)",
+            )
+            .execute()
+        )
 
-        folders = results.get('files', [])
+        folders = results.get("files", [])
 
         if folders:
-            return folders[0]['id']
+            return folders[0]["id"]
 
         # Create new folder
         folder_metadata = {
-            'name': folder_name,
-            'mimeType': 'application/vnd.google-apps.folder'
+            "name": folder_name,
+            "mimeType": "application/vnd.google-apps.folder",
         }
 
-        folder = service.files().create(body=folder_metadata, fields='id').execute()
-        return folder.get('id')
-    
-    async def upload_file(self, file: UploadFile, subfolder: str = "resumes") -> Dict[str, Any]:
+        folder = service.files().create(body=folder_metadata, fields="id").execute()
+        return folder.get("id")
+
+    async def upload_file(
+        self, file: UploadFile, subfolder: str = "resumes"
+    ) -> Dict[str, Any]:
         """
         Upload file based on UPLOAD_CLOUD_TARGET configuration
-        
+
         Args:
             file: The uploaded file
             subfolder: Subfolder for local storage or folder name for Google Drive
-            
+
         Returns:
             Dict containing file information
         """

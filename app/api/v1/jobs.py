@@ -10,10 +10,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
-def create_job(
-    job_data: JobCreateRequest,
-    db: Session = Depends(get_db_session)
-):
+def create_job(job_data: JobCreateRequest, db: Session = Depends(get_db_session)):
     """Create a new job with requirements, skills, and certificates"""
     job_result = job_service.create_job(db, job_data)
     return job_result["job"]
@@ -24,7 +21,7 @@ def get_jobs(
     skip: int = 0,
     limit: int = 100,
     include_details: bool = True,
-    db: Session = Depends(get_db_session)
+    db: Session = Depends(get_db_session),
 ):
     """Get all jobs with optional details"""
     if include_details:
@@ -43,7 +40,7 @@ def get_jobs(
                 "job_requirements": job_data["job_requirements"],
                 "skills": skills,
                 "certificates": certificates,
-                "black_lists": black_lists
+                "black_lists": black_lists,
             }
             result.append(JobWithDetailsResponse(**response_data))
         return result
@@ -54,9 +51,7 @@ def get_jobs(
 
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(
-    job_id: int,
-    include_details: bool = False,
-    db: Session = Depends(get_db_session)
+    job_id: int, include_details: bool = False, db: Session = Depends(get_db_session)
 ):
     """Get job by ID with optional details"""
     if include_details:
@@ -66,47 +61,36 @@ def get_job(
 
     if not job:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
         )
     return job
 
 
 @router.put("/{job_id}", response_model=JobResponse)
 def update_job(
-    job_id: int,
-    job_data: JobUpdateRequest,
-    db: Session = Depends(get_db_session)
+    job_id: int, job_data: JobUpdateRequest, db: Session = Depends(get_db_session)
 ):
     """Update job with requirements, skills, and certificates"""
     job_result = job_service.update_job(db, job_id, job_data)
     if not job_result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
         )
     return job_result["job"]
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_job(
-    job_id: int,
-    db: Session = Depends(get_db_session)
-):
+def delete_job(job_id: int, db: Session = Depends(get_db_session)):
     """Soft delete job"""
     success = job_service.soft_delete(db, job_id)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
         )
 
 
 @router.get("/area/{area}", response_model=List[JobResponse])
-def get_jobs_by_area(
-    area: int,
-    db: Session = Depends(get_db_session)
-):
+def get_jobs_by_area(area: int, db: Session = Depends(get_db_session)):
     """Get jobs by area (1: Da Nang, 3: Ho Chi Minh, 5: Hanoi)"""
     jobs = job_service.get_jobs_by_area(db, area)
     return jobs
@@ -114,8 +98,7 @@ def get_jobs_by_area(
 
 @router.get("/employment-type/{employment_type}", response_model=List[JobResponse])
 def get_jobs_by_employment_type(
-    employment_type: int,
-    db: Session = Depends(get_db_session)
+    employment_type: int, db: Session = Depends(get_db_session)
 ):
     """Get jobs by employment type"""
     jobs = job_service.get_jobs_by_employment_type(db, employment_type)
@@ -123,36 +106,26 @@ def get_jobs_by_employment_type(
 
 
 @router.get("/creator/{created_by}", response_model=List[JobResponse])
-def get_jobs_by_creator(
-    created_by: int,
-    db: Session = Depends(get_db_session)
-):
+def get_jobs_by_creator(created_by: int, db: Session = Depends(get_db_session)):
     """Get jobs created by a specific user"""
     jobs = job_service.get_jobs_by_creator(db, created_by)
     return jobs
 
 
 @router.get("/search/{title_keyword}", response_model=List[JobResponse])
-def search_jobs_by_title(
-    title_keyword: str,
-    db: Session = Depends(get_db_session)
-):
+def search_jobs_by_title(title_keyword: str, db: Session = Depends(get_db_session)):
     """Search jobs by title keyword"""
     jobs = job_service.search_jobs_by_title(db, title_keyword)
     return jobs
 
 
 @router.get("/{job_id}/details", response_model=JobWithDetailsResponse)
-def get_job_with_details(
-    job_id: int,
-    db: Session = Depends(get_db_session)
-):
+def get_job_with_details(job_id: int, db: Session = Depends(get_db_session)):
     """Get job with full details including job role, requirements, skills, certificates, and black lists"""
     job_details = job_service.get_job_with_details(db, job_id)
     if not job_details:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
         )
 
     # Get additional details
@@ -167,17 +140,14 @@ def get_job_with_details(
         "job_requirements": job_details["job_requirements"],
         "skills": skills,
         "certificates": certificates,
-        "black_lists": black_lists
+        "black_lists": black_lists,
     }
 
     return JobWithDetailsResponse(**response_data)
 
 
 @router.get("/role/{job_role_id}", response_model=List[JobResponse])
-def get_jobs_by_role(
-    job_role_id: int,
-    db: Session = Depends(get_db_session)
-):
+def get_jobs_by_role(job_role_id: int, db: Session = Depends(get_db_session)):
     """Get jobs by job role"""
     jobs = job_service.get_jobs_by_role(db, job_role_id)
     return jobs

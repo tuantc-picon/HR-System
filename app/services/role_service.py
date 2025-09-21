@@ -19,29 +19,35 @@ class RoleService(BaseService[Role]):
         if existing_role:
             raise HRSystemBaseException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Role name already exists"
+                message="Role name already exists",
             )
-        
+
         role_dict = role_data.model_dump()
         return self.create(db, role_dict)
 
-    def update_role(self, db: Session, role_id: int, role_data: RoleUpdateRequest) -> Optional[Role]:
+    def update_role(
+        self, db: Session, role_id: int, role_data: RoleUpdateRequest
+    ) -> Optional[Role]:
         """Update role with validation"""
         # Check if name already exists for another role
         if role_data.name:
-            existing_role = db.query(Role).filter(
-                and_(
-                    Role.name == role_data.name,
-                    Role.id != role_id,
-                    Role.deleted_at.is_(None)
+            existing_role = (
+                db.query(Role)
+                .filter(
+                    and_(
+                        Role.name == role_data.name,
+                        Role.id != role_id,
+                        Role.deleted_at.is_(None),
+                    )
                 )
-            ).first()
+                .first()
+            )
             if existing_role:
                 raise HRSystemBaseException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    message="Role name already exists"
+                    message="Role name already exists",
                 )
-        
+
         role_dict = role_data.model_dump(exclude_unset=True)
         return self.update(db, role_id, role_dict)
 
@@ -51,12 +57,11 @@ class RoleService(BaseService[Role]):
 
     def get_active_roles(self, db: Session) -> List[Role]:
         """Get all active roles"""
-        return db.query(Role).filter(
-            and_(
-                Role.is_active == True,
-                Role.deleted_at.is_(None)
-            )
-        ).all()
+        return (
+            db.query(Role)
+            .filter(and_(Role.is_active == True, Role.deleted_at.is_(None)))
+            .all()
+        )
 
     def activate_role(self, db: Session, role_id: int) -> Optional[Role]:
         """Activate a role"""
