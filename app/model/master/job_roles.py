@@ -2,6 +2,7 @@ from sqlalchemy import Integer, String, Column, Boolean
 
 from model.base import HRSystemBase, DateTimeMixin
 
+
 class JobRole(HRSystemBase, DateTimeMixin):
     __tablename__ = "m_job_roles"
 

@@ -7,7 +7,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
-
 class AesGCMRotation:
     BATCH_SIZE = 50
     LEN_KEYS: ClassVar[list] = [16, 24, 32]

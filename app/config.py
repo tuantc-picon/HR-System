@@ -59,12 +59,12 @@ babel_configs = BabelConfigs(
 
 API_PORT = int(os.getenv("API_PORT"))
 
-GOOGLE_API_KEY=os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Google API Scopes
 GMAIL_SCOPES = [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/drive.file'
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/drive.file",
 ]
 
 LANGUAGE_MESSAGE = "ja"

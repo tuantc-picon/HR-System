@@ -22,7 +22,7 @@ class GmailService:
         self,
         credentials_file: str = "credentials.json",
         token_file: str = "token.json",
-        download_dir: str = "downloads"
+        download_dir: str = "downloads",
     ):
         self.credentials_file = credentials_file
         self.token_file = token_file
@@ -39,7 +39,9 @@ class GmailService:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(self.credentials_file, GMAIL_SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    self.credentials_file, GMAIL_SCOPES
+                )
                 creds = flow.run_local_server(port=0)
             with open(self.token_file, "w") as token:
                 token.write(creds.to_json())
@@ -71,9 +73,13 @@ class GmailService:
         for part in parts:
             if part.get("filename"):
                 att_id = part["body"]["attachmentId"]
-                att = self.service.users().messages().attachments().get(
-                    userId="me", messageId=msg_id, id=att_id
-                ).execute()
+                att = (
+                    self.service.users()
+                    .messages()
+                    .attachments()
+                    .get(userId="me", messageId=msg_id, id=att_id)
+                    .execute()
+                )
                 data = att["data"]
                 file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
 
@@ -81,10 +87,9 @@ class GmailService:
                 with open(filepath, "wb") as f:
                     f.write(file_data)
 
-                attachments.append({
-                    "file_name": part["filename"],
-                    "file_path": filepath
-                })
+                attachments.append(
+                    {"file_name": part["filename"], "file_path": filepath}
+                )
         return attachments
 
     # ------------------------------
@@ -103,17 +108,21 @@ class GmailService:
             }
         ]
         """
-        results = self.service.users().messages().list(
-            userId="me",
-            maxResults=max_results
-        ).execute()
+        results = (
+            self.service.users()
+            .messages()
+            .list(userId="me", maxResults=max_results)
+            .execute()
+        )
 
         messages = results.get("messages", [])
         candidates = []
 
         for msg in messages:
             msg_id = msg["id"]
-            message = self.service.users().messages().get(userId="me", id=msg_id).execute()
+            message = (
+                self.service.users().messages().get(userId="me", id=msg_id).execute()
+            )
 
             if not self._is_cv_email(message):
                 continue
@@ -122,11 +131,8 @@ class GmailService:
             subject = self._extract_header(message, "Subject")
             attachments = self._download_attachments(message, msg_id)
 
-            candidates.append({
-                "email": sender,
-                "subject": subject,
-                "attachments": attachments
-            })
+            candidates.append(
+                {"email": sender, "subject": subject, "attachments": attachments}
+            )
 
         return candidates
-

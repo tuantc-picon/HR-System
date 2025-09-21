@@ -5,6 +5,7 @@ from typing import Optional
 
 class JobRoleResponse(BaseModel):
     """Schema for job role response"""
+
     id: int
     name: str
     description: Optional[str] = None

@@ -8,6 +8,11 @@ class JobRequirement(HRSystemBase, DateTimeMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     job_id = Column(ForeignKey("t_jobs.id"), nullable=False)
+    job_role_id = Column(
+        ForeignKey("m_job_roles.id"),
+        nullable=True,
+        comment="Reference to job role master data",
+    )
     min_experience = Column(Integer, nullable=True)
     max_experience = Column(Integer, nullable=True)
     min_salary = Column(Integer, nullable=True)

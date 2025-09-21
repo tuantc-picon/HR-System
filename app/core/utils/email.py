@@ -1,6 +1,3 @@
-
-
-
 @staticmethod
 def is_cv_email(message):
     subject = ""
