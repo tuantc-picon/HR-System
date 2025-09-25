@@ -6,6 +6,7 @@ from typing import Optional
 class JobRequirementResponse(BaseModel):
     id: int
     job_id: int
+    job_role_id: Optional[int] = None  # Inherited from parent job
     min_experience: Optional[int] = None
     max_experience: Optional[int] = None
     min_salary: Optional[int] = None

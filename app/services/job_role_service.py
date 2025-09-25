@@ -2,6 +2,9 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from model.master.job_roles import JobRole
+from model.master.skills import Skill
+
+# JobRoleSkill removed - using direct FK in m_skills table
 from services.base_service import BaseService
 from schema.request.job_role_schemas import JobRoleCreateRequest, JobRoleUpdateRequest
 from core.common.exceptions import HRSystemBaseException
@@ -79,6 +82,42 @@ class JobRoleService(BaseService[JobRole]):
             db.query(JobRole)
             .filter(and_(JobRole.name.ilike(f"%{name}%"), JobRole.deleted_at.is_(None)))
             .all()
+        )
+
+    def get_skills_for_job_role(self, db: Session, job_role_id: int) -> List[Skill]:
+        """Get all skills associated with a job role using direct FK"""
+        return (
+            db.query(Skill)
+            .filter(
+                and_(
+                    Skill.job_role_id == job_role_id,
+                    Skill.is_active == True,
+                    Skill.deleted_at.is_(None),
+                )
+            )
+            .all()
+        )
+
+    def get_job_role_with_skills(self, db: Session, job_role_id: int) -> Optional[dict]:
+        """Get a job role with its associated skills"""
+        job_role = self.get_by_id(db, job_role_id)
+        if not job_role:
+            return None
+
+        skills = self.get_skills_for_job_role(db, job_role_id)
+        return {"job_role": job_role, "skills": skills}
+
+    def count_skills_for_job_role(self, db: Session, job_role_id: int) -> int:
+        """Count the number of skills associated with a job role"""
+        return (
+            db.query(JobRoleSkill)
+            .filter(
+                and_(
+                    JobRoleSkill.job_role_id == job_role_id,
+                    JobRoleSkill.deleted_at.is_(None),
+                )
+            )
+            .count()
         )
 
 

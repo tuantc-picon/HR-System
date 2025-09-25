@@ -5,6 +5,7 @@ from core.common.database import get_db_session
 from services.job_service import job_service
 from schema.request.job_schemas import JobCreateRequest, JobUpdateRequest
 from schema.response.job_schemas import JobResponse, JobWithDetailsResponse
+from schema.response.skill_schemas import SkillResponse
 
 router = APIRouter()
 
@@ -151,3 +152,10 @@ def get_jobs_by_role(job_role_id: int, db: Session = Depends(get_db_session)):
     """Get jobs by job role"""
     jobs = job_service.get_jobs_by_role(db, job_role_id)
     return jobs
+
+
+@router.get("/{job_id}/skills", response_model=List[SkillResponse])
+def get_job_skills(job_id: int, db: Session = Depends(get_db_session)):
+    """Get skills for a job (inherited from job role)"""
+    skills = job_service.get_job_skills(db, job_id)
+    return skills

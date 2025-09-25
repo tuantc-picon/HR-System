@@ -34,7 +34,7 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(Exception, base_error_handler)
 
-app.include_router(router, prefix="/api")
+app.include_router(router, prefix="/api/v1")
 
 
 if __name__ == "__main__":

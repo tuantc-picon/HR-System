@@ -19,6 +19,7 @@ class JobRequirementInfo(BaseModel):
     """Basic job requirement information for job response"""
 
     id: int
+    job_role_id: Optional[int] = None  # Inherited from parent job - MUST be included
     min_experience: Optional[int] = None
     max_experience: Optional[int] = None
     min_salary: Optional[int] = None
