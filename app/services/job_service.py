@@ -8,6 +8,8 @@ from model.master.skills import Skill
 from model.master.certificates import Certificate
 from model.job.job_requirement_certificates import JobRequirementCertificate
 from model.job.job_requirement_black_lists import JobRequirementBlackList
+
+# JobRoleSkill removed - using direct FK in m_skills table
 from model.job.job_requirement_skills import JobRequirementSkill
 from model.job.job_skills import JobSkill
 from model.master.black_lists import BlackList
@@ -22,7 +24,7 @@ class JobService(BaseService[Job]):
         super().__init__(Job)
 
     def create_job(self, db: Session, job_data: JobCreateRequest) -> Dict[str, Any]:
-        """Create a new job with requirements, skills, and certificates"""
+        """Create a new job with requirements and selected skills"""
         try:
             # Create the job first
             job_dict = job_data.model_dump(
@@ -52,19 +54,6 @@ class JobService(BaseService[Job]):
                                 message="Job role is not active",
                             )
 
-                    # Validate skill IDs if provided
-                    if req_data.skill_ids:
-                        skills = (
-                            db.query(Skill)
-                            .filter(Skill.id.in_(req_data.skill_ids))
-                            .all()
-                        )
-                        if len(skills) != len(req_data.skill_ids):
-                            raise HRSystemBaseException(
-                                status_code=status.HTTP_400_BAD_REQUEST,
-                                message="One or more skills not found",
-                            )
-
                     # Create job requirement
                     requirement = JobRequirement(
                         job_id=job.id,
@@ -81,9 +70,53 @@ class JobService(BaseService[Job]):
 
                     # Create skill associations if provided
                     if req_data.skill_ids:
+                        # Validate skills exist and are active
+                        skills = (
+                            db.query(Skill)
+                            .filter(
+                                and_(
+                                    Skill.id.in_(req_data.skill_ids),
+                                    Skill.is_active == True,
+                                    Skill.deleted_at.is_(None),
+                                )
+                            )
+                            .all()
+                        )
+
+                        if len(skills) != len(req_data.skill_ids):
+                            raise HRSystemBaseException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                message="One or more skills not found or inactive",
+                            )
+
+                        # If job_role_id is specified, validate skills belong to that job role
+                        if req_data.job_role_id:
+                            # Check skills directly using job_role_id FK in m_skills
+                            valid_skills = (
+                                db.query(Skill)
+                                .filter(
+                                    and_(
+                                        Skill.job_role_id == req_data.job_role_id,
+                                        Skill.id.in_(req_data.skill_ids),
+                                        Skill.is_active == True,
+                                        Skill.deleted_at.is_(None),
+                                    )
+                                )
+                                .all()
+                            )
+
+                            valid_skill_ids = {skill.id for skill in valid_skills}
+                            if not set(req_data.skill_ids).issubset(valid_skill_ids):
+                                raise HRSystemBaseException(
+                                    status_code=status.HTTP_400_BAD_REQUEST,
+                                    message="Some skills are not associated with the specified job role",
+                                )
+
+                        # Create skill associations
                         for skill_id in req_data.skill_ids:
                             skill_assoc = JobRequirementSkill(
-                                job_requirement_id=requirement.id, skill_id=skill_id
+                                job_requirement_id=requirement.id,
+                                skill_id=skill_id,
                             )
                             db.add(skill_assoc)
 
@@ -147,6 +180,8 @@ class JobService(BaseService[Job]):
             job_requirements = []
             if job_data.job_requirements is not None:
                 # Delete existing requirements and their associations
+
+                # Delete skill associations first
                 db.query(JobRequirementSkill).filter(
                     JobRequirementSkill.job_requirement_id.in_(
                         db.query(JobRequirement.id).filter(
@@ -195,19 +230,7 @@ class JobService(BaseService[Job]):
                                 message="Job role is not active",
                             )
 
-                    # Validate skill IDs if provided
-                    if req_data.skill_ids:
-                        skills = (
-                            db.query(Skill)
-                            .filter(Skill.id.in_(req_data.skill_ids))
-                            .all()
-                        )
-                        if len(skills) != len(req_data.skill_ids):
-                            raise HRSystemBaseException(
-                                status_code=status.HTTP_400_BAD_REQUEST,
-                                message="One or more skills not found",
-                            )
-
+                    # Create job requirement
                     requirement = JobRequirement(
                         job_id=job.id,
                         job_role_id=req_data.job_role_id,
@@ -218,14 +241,58 @@ class JobService(BaseService[Job]):
                         note=req_data.note,
                     )
                     db.add(requirement)
-                    db.flush()
+                    db.flush()  # Get the ID
                     job_requirements.append(requirement)
 
                     # Create skill associations if provided
                     if req_data.skill_ids:
+                        # Validate skills exist and are active
+                        skills = (
+                            db.query(Skill)
+                            .filter(
+                                and_(
+                                    Skill.id.in_(req_data.skill_ids),
+                                    Skill.is_active == True,
+                                    Skill.deleted_at.is_(None),
+                                )
+                            )
+                            .all()
+                        )
+
+                        if len(skills) != len(req_data.skill_ids):
+                            raise HRSystemBaseException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                message="One or more skills not found or inactive",
+                            )
+
+                        # If job_role_id is specified, validate skills belong to that job role
+                        if req_data.job_role_id:
+                            # Check skills directly using job_role_id FK in m_skills
+                            valid_skills = (
+                                db.query(Skill)
+                                .filter(
+                                    and_(
+                                        Skill.job_role_id == req_data.job_role_id,
+                                        Skill.id.in_(req_data.skill_ids),
+                                        Skill.is_active == True,
+                                        Skill.deleted_at.is_(None),
+                                    )
+                                )
+                                .all()
+                            )
+
+                            valid_skill_ids = {skill.id for skill in valid_skills}
+                            if not set(req_data.skill_ids).issubset(valid_skill_ids):
+                                raise HRSystemBaseException(
+                                    status_code=status.HTTP_400_BAD_REQUEST,
+                                    message="Some skills are not associated with the specified job role",
+                                )
+
+                        # Create skill associations
                         for skill_id in req_data.skill_ids:
                             skill_assoc = JobRequirementSkill(
-                                job_requirement_id=requirement.id, skill_id=skill_id
+                                job_requirement_id=requirement.id,
+                                skill_id=skill_id,
                             )
                             db.add(skill_assoc)
 
@@ -399,13 +466,14 @@ class JobService(BaseService[Job]):
         return result
 
     def get_job_skills(self, db: Session, job_id: int) -> List[Skill]:
-        """Get skills for a job through job requirement skills table"""
-        # Get job requirements first
+        """Get skills for a job through job requirement skills"""
+        # Get all job requirements for this job
         job_requirements = (
             db.query(JobRequirement)
             .filter(
                 and_(
-                    JobRequirement.job_id == job_id, JobRequirement.deleted_at.is_(None)
+                    JobRequirement.job_id == job_id,
+                    JobRequirement.deleted_at.is_(None),
                 )
             )
             .all()
@@ -414,9 +482,9 @@ class JobService(BaseService[Job]):
         if not job_requirements:
             return []
 
-        # Get skill IDs from job requirement skills table
+        # Get all skill associations for these job requirements
         requirement_ids = [req.id for req in job_requirements]
-        job_skill_associations = (
+        job_requirement_skill_associations = (
             db.query(JobRequirementSkill)
             .filter(
                 and_(
@@ -427,11 +495,13 @@ class JobService(BaseService[Job]):
             .all()
         )
 
-        if not job_skill_associations:
+        if not job_requirement_skill_associations:
             return []
 
-        # Get skills
-        skill_ids = [assoc.skill_id for assoc in job_skill_associations]
+        # Get unique skills
+        skill_ids = list(
+            set([assoc.skill_id for assoc in job_requirement_skill_associations])
+        )
         return (
             db.query(Skill)
             .filter(
@@ -443,6 +513,21 @@ class JobService(BaseService[Job]):
             )
             .all()
         )
+
+    def _get_job_role_skill_ids(self, db: Session, job_role_id: int) -> List[int]:
+        """Get all skill IDs available for a job role using direct FK"""
+        skills = (
+            db.query(Skill)
+            .filter(
+                and_(
+                    Skill.job_role_id == job_role_id,
+                    Skill.is_active == True,
+                    Skill.deleted_at.is_(None),
+                )
+            )
+            .all()
+        )
+        return [skill.id for skill in skills]
 
     def get_job_certificates(self, db: Session, job_id: int) -> List[Certificate]:
         """Get certificates required for a job"""

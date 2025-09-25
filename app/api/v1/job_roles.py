@@ -5,7 +5,8 @@ from typing import List
 from core.common.database import get_db_session
 from services.job_role_service import job_role_service
 from schema.request.job_role_schemas import JobRoleCreateRequest, JobRoleUpdateRequest
-from schema.response.job_role_schemas import JobRoleResponse
+from schema.response.job_role_schemas import JobRoleResponse, JobRoleWithSkillsResponse
+from schema.response.skill_schemas import SkillResponse
 
 router = APIRouter()
 
@@ -97,3 +98,25 @@ def search_job_roles_by_name(name: str, db: Session = Depends(get_db_session)):
     """Search job roles by name"""
     job_roles = job_role_service.search_job_roles_by_name(db, name)
     return job_roles
+
+
+@router.get("/{job_role_id}/with-skills", response_model=JobRoleWithSkillsResponse)
+def get_job_role_with_skills(job_role_id: int, db: Session = Depends(get_db_session)):
+    """Get job role with its associated skills"""
+    result = job_role_service.get_job_role_with_skills(db, job_role_id)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Job role not found"
+        )
+
+    # Create response with skills
+    job_role_dict = result["job_role"].__dict__.copy()
+    job_role_dict["skills"] = result["skills"]
+    return job_role_dict
+
+
+@router.get("/{job_role_id}/skills", response_model=List[SkillResponse])
+def get_skills_for_job_role(job_role_id: int, db: Session = Depends(get_db_session)):
+    """Get all skills associated with a job role"""
+    skills = job_role_service.get_skills_for_job_role(db, job_role_id)
+    return skills

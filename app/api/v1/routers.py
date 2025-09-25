@@ -5,10 +5,13 @@ from fastapi import APIRouter
 # from api.v1.certificates import router as certificates_router
 from api.v1.black_lists import router as black_lists_router
 
-# from api.v1.skills import router as skills_router
+from api.v1.skills import router as skills_router
 from api.v1.jobs import router as jobs_router
 
-# from api.v1.job_roles import router as job_roles_router
+from api.v1.job_roles import router as job_roles_router
+
+# job_role_skills removed - using direct FK in m_skills table
+# from api.v1.job_skills import router as job_skills_router
 # from api.v1.job_requirements import router as job_requirements_router
 from api.v1.candidates import router as candidates_router
 from api.v1.resumes import router as resumes_router
@@ -30,10 +33,15 @@ router.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 # router.include_router(users_router, prefix="/users", tags=["Users"])
 # router.include_router(roles_router, prefix="/roles", tags=["Roles"])
 # router.include_router(certificates_router, prefix="/certificates", tags=["Certificates"])
-router.include_router(black_lists_router, prefix="/black-lists", tags=["Black Lists"])
+# Master data APIs - managed through migrations/master_data
+# router.include_router(black_lists_router, prefix="/black-lists", tags=["Black Lists"])
 # router.include_router(skills_router, prefix="/skills", tags=["Skills"])
-router.include_router(jobs_router, prefix="/jobs", tags=["Jobs"])
 # router.include_router(job_roles_router, prefix="/job-roles", tags=["Job Roles"])
+# router.include_router(job_role_skills_router, prefix="/job-role-skills", tags=["Job Role Skills"])
+
+# Business logic APIs
+router.include_router(jobs_router, prefix="/jobs", tags=["Jobs"])
+# router.include_router(job_skills_router, prefix="/job-skills", tags=["Job Skills"])
 # router.include_router(job_requirements_router, prefix="/job-requirements", tags=["Job Requirements"])
 router.include_router(candidates_router, prefix="/candidates", tags=["Candidates"])
 router.include_router(resumes_router, prefix="/resumes", tags=["Resumes"])

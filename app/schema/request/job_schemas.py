@@ -3,20 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 
 
-class JobRequirementCreateRequest(BaseModel):
-    """Schema for creating job requirements"""
-
-    min_experience: Optional[int] = None
-    max_experience: Optional[int] = None
-    min_salary: Optional[int] = None
-    max_salary: Optional[int] = None
-    note: Optional[str] = None
-    certificate_ids: Optional[List[int]] = []  # List of certificate IDs required
-    black_list_ids: Optional[List[int]] = []  # List of black list IDs to check
-    skill_ids: Optional[
-        List[int]
-    ] = []  # List of skill IDs required for this job requirement
-    job_role_id: Optional[int] = None  # Reference to job role master data
+from .job_requirement_schemas import JobRequirementCreateRequest
 
 
 class JobCreateRequest(BaseModel):
@@ -37,11 +24,12 @@ class JobCreateRequest(BaseModel):
     ] = False  # Flag to indicate if black list checks should be applied
 
     class Config:
-        extra = "forbid"  # Forbid extra fields to ensure skill_ids and job_role_id are not accepted
+        extra = "forbid"  # Forbid extra fields
 
 
 class JobUpdateRequest(BaseModel):
     title: Optional[str] = None
+    # No job_role_id or skill_ids at job level - managed at requirement level
     area: Optional[int] = None
     employment_type: Optional[int] = None
     status: Optional[int] = None
@@ -54,4 +42,4 @@ class JobUpdateRequest(BaseModel):
     include_black_list_check: Optional[bool] = None
 
     class Config:
-        extra = "forbid"  # Forbid extra fields to ensure skill_ids and job_role_id are not accepted
+        extra = "forbid"  # Forbid extra fields

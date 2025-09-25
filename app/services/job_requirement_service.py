@@ -2,9 +2,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from model.job.job_requirements import JobRequirement
-from model.job.job_requirement_skills import JobRequirementSkill
 from model.master.job_roles import JobRole
-from model.master.skills import Skill
 from services.base_service import BaseService
 from schema.request.job_requirement_schemas import (
     JobRequirementCreateRequest,
@@ -41,19 +39,6 @@ class JobRequirementService(BaseService[JobRequirement]):
                         message="Job role is not active",
                     )
 
-            # Validate skill IDs if provided
-            if job_requirement_data.skill_ids:
-                skills = (
-                    db.query(Skill)
-                    .filter(Skill.id.in_(job_requirement_data.skill_ids))
-                    .all()
-                )
-                if len(skills) != len(job_requirement_data.skill_ids):
-                    raise HRSystemBaseException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        message="One or more skills not found",
-                    )
-
             # Validate salary range
             if (
                 job_requirement_data.min_salary is not None
@@ -78,18 +63,8 @@ class JobRequirementService(BaseService[JobRequirement]):
                 )
 
             # Create job requirement
-            job_requirement_dict = job_requirement_data.model_dump(
-                exclude={"skill_ids"}
-            )
+            job_requirement_dict = job_requirement_data.model_dump()
             job_requirement = self.create(db, job_requirement_dict)
-
-            # Create skill associations if provided
-            if job_requirement_data.skill_ids:
-                for skill_id in job_requirement_data.skill_ids:
-                    skill_assoc = JobRequirementSkill(
-                        job_requirement_id=job_requirement.id, skill_id=skill_id
-                    )
-                    db.add(skill_assoc)
 
             db.commit()
             return job_requirement
@@ -133,20 +108,6 @@ class JobRequirementService(BaseService[JobRequirement]):
                         status_code=status.HTTP_400_BAD_REQUEST,
                         message="Job role is not active",
                     )
-
-            # Validate skill IDs if provided
-            if job_requirement_data.skill_ids is not None:
-                if job_requirement_data.skill_ids:
-                    skills = (
-                        db.query(Skill)
-                        .filter(Skill.id.in_(job_requirement_data.skill_ids))
-                        .all()
-                    )
-                    if len(skills) != len(job_requirement_data.skill_ids):
-                        raise HRSystemBaseException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            message="One or more skills not found",
-                        )
 
             # Prepare updated values for validation
             min_salary = (
@@ -192,24 +153,8 @@ class JobRequirementService(BaseService[JobRequirement]):
                     message="Minimum experience cannot be greater than maximum experience",
                 )
 
-            # Update job requirement skills if provided
-            if job_requirement_data.skill_ids is not None:
-                # Delete existing skill associations
-                db.query(JobRequirementSkill).filter(
-                    JobRequirementSkill.job_requirement_id == job_requirement_id
-                ).delete()
-
-                # Create new skill associations
-                for skill_id in job_requirement_data.skill_ids:
-                    skill_assoc = JobRequirementSkill(
-                        job_requirement_id=job_requirement_id, skill_id=skill_id
-                    )
-                    db.add(skill_assoc)
-
             # Update job requirement
-            job_requirement_dict = job_requirement_data.model_dump(
-                exclude_unset=True, exclude={"skill_ids"}
-            )
+            job_requirement_dict = job_requirement_data.model_dump(exclude_unset=True)
             updated_requirement = self.update(
                 db, job_requirement_id, job_requirement_dict
             )
