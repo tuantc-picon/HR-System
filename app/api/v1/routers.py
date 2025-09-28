@@ -22,6 +22,7 @@ from api.v1.applications import router as applications_router
 from api.v1.master_data import router as master_data_router
 from api.v1.auth import router as auth_router
 from api.v1.batch_processing import router as batch_processing_router
+from api.v1.files import router as files_router
 
 router = APIRouter(redirect_slashes=False)
 
@@ -54,6 +55,7 @@ router.include_router(master_data_router, prefix="/master-data", tags=["Master D
 router.include_router(
     batch_processing_router, prefix="/batch", tags=["Batch Processing"]
 )
+router.include_router(files_router, prefix="/files", tags=["File Serving"])
 
 
 @router.get("/health")

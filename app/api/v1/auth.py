@@ -95,10 +95,22 @@ def logout(
         auth_service.logout(db, credentials.credentials)
         return {"message": "Successfully logged out"}
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Logout failed: {str(e)}",
-        )
+        # For authentication-related errors, return 401 instead of 500
+        error_msg = str(e).lower()
+        if any(
+            keyword in error_msg
+            for keyword in ["jwt", "token", "signature", "decode", "invalid"]
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Logout failed: {str(e)}",
+            )
 
 
 @router.get("/me")
@@ -136,7 +148,19 @@ def get_current_user(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get user info: {str(e)}",
-        )
+        # For authentication-related errors, return 401 instead of 500
+        error_msg = str(e).lower()
+        if any(
+            keyword in error_msg
+            for keyword in ["jwt", "token", "signature", "decode", "invalid"]
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to get user info: {str(e)}",
+            )

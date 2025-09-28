@@ -34,6 +34,12 @@ class Job(HRSystemBase, DateTimeMixin):
     application_deadline = Column(
         DateTime(timezone=True), nullable=True, comment="Deadline for job applications"
     )
+    recruitment_count = Column(
+        Integer,
+        default=1,
+        nullable=False,
+        comment="Number of people to recruit for this position",
+    )
     description = Column(Text, nullable=True)
     source = Column(Integer, nullable=True)
     created_by = Column(Integer, nullable=True)

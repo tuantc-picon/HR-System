@@ -59,13 +59,15 @@ class MasterDataService:
         from model.job.job_skills import JobSkill
         from model.job.job_requirement_certificates import JobRequirementCertificate
         from model.job.job_requirement_black_lists import JobRequirementBlackList
+        from model.job.job_requirement_skills import JobRequirementSkill
         from model.job.job_requirements import JobRequirement
 
         db.query(Job).update({Job.job_role_id: None})
 
-        # Delete job requirement associations first
+        # Delete job requirement associations first (in correct order)
         db.query(JobRequirementCertificate).delete()
         db.query(JobRequirementBlackList).delete()
+        db.query(JobRequirementSkill).delete()  # This was missing!
         db.query(JobRequirement).delete()
 
         # Delete job_skills associations (they reference skills)

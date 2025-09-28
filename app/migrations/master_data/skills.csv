@@ -15,3 +15,200 @@ Developer,Supabase
 Developer,SQLite
 Developer,RESTful API
 Developer,GraphQL
+Developer,Node.js
+Developer,React
+Developer,Vue.js
+Developer,Angular
+Developer,Laravel
+Developer,Django
+Developer,Spring Boot
+Developer,.NET Core
+Developer,Express.js
+Developer,FastAPI
+Developer,Redis
+Developer,Elasticsearch
+Developer,Kubernetes
+Developer,Git
+Developer,Linux
+Developer,Microservices
+Mobile,Swift
+Mobile,Kotlin
+Mobile,React Native
+Mobile,Flutter
+Mobile,Xamarin
+Mobile,iOS Development
+Mobile,Android Development
+Mobile,Mobile UI/UX
+Mobile,Core Data
+Mobile,SQLite
+Mobile,Firebase
+Mobile,Push Notifications
+Mobile,App Store Optimization
+Mobile,Mobile Testing
+Mobile,Xcode
+Mobile,Android Studio
+AI,Python
+AI,TensorFlow
+AI,PyTorch
+AI,Scikit-learn
+AI,Pandas
+AI,NumPy
+AI,Jupyter
+AI,Machine Learning
+AI,Deep Learning
+AI,Natural Language Processing
+AI,Computer Vision
+AI,Data Science
+AI,Statistics
+AI,R
+AI,SQL
+AI,Big Data
+AI,Apache Spark
+AI,Hadoop
+AI,MLOps
+AI,Model Deployment
+AI,Feature Engineering
+QC,Manual Testing
+QC,Automation Testing
+QC,Selenium
+QC,Cypress
+QC,Jest
+QC,Postman
+QC,API Testing
+QC,Performance Testing
+QC,Load Testing
+QC,Security Testing
+QC,Test Planning
+QC,Bug Tracking
+QC,JIRA
+QC,TestRail
+QC,Regression Testing
+QC,User Acceptance Testing
+QC,Mobile Testing
+QC,Cross-browser Testing
+BA,Requirements Analysis
+BA,Business Process Modeling
+BA,Stakeholder Management
+BA,Data Analysis
+BA,SQL
+BA,Excel
+BA,Power BI
+BA,Tableau
+BA,Wireframing
+BA,User Stories
+BA,Use Cases
+BA,Gap Analysis
+BA,Process Improvement
+BA,Documentation
+BA,BPMN
+BA,Agile Methodology
+BA,Scrum
+BA,Confluence
+PO,Product Strategy
+PO,Product Roadmap
+PO,User Story Writing
+PO,Backlog Management
+PO,Stakeholder Management
+PO,Market Research
+PO,Competitive Analysis
+PO,User Experience
+PO,A/B Testing
+PO,Analytics
+PO,Google Analytics
+PO,Product Metrics
+PO,Agile Methodology
+PO,Scrum
+PO,JIRA
+PO,Confluence
+PO,Figma
+PO,Miro
+PM,Project Planning
+PM,Risk Management
+PM,Resource Management
+PM,Budget Management
+PM,Timeline Management
+PM,Stakeholder Communication
+PM,Team Leadership
+PM,Agile Methodology
+PM,Scrum
+PM,Kanban
+PM,Waterfall
+PM,Microsoft Project
+PM,JIRA
+PM,Confluence
+PM,Gantt Charts
+PM,Critical Path Method
+PM,Change Management
+PM,Quality Assurance
+Tech Lead,Technical Architecture
+Tech Lead,System Design
+Tech Lead,Code Review
+Tech Lead,Mentoring
+Tech Lead,Team Leadership
+Tech Lead,Technology Strategy
+Tech Lead,Performance Optimization
+Tech Lead,Scalability
+Tech Lead,Security Best Practices
+Tech Lead,DevOps
+Tech Lead,CI/CD
+Tech Lead,Cloud Architecture
+Tech Lead,Microservices
+Tech Lead,API Design
+Tech Lead,Database Design
+Tech Lead,Technical Documentation
+Tech Lead,Problem Solving
+BrSE,Japanese Language
+BrSE,English Communication
+BrSE,Technical Translation
+BrSE,Requirements Analysis
+BrSE,System Integration
+BrSE,Cross-cultural Communication
+BrSE,Project Coordination
+BrSE,Technical Documentation
+BrSE,Client Management
+BrSE,Offshore Development
+BrSE,Quality Assurance
+BrSE,Risk Management
+BrSE,Agile Methodology
+BrSE,Waterfall
+UX/UI,User Experience Design
+UX/UI,User Interface Design
+UX/UI,Wireframing
+UX/UI,Prototyping
+UX/UI,User Research
+UX/UI,Usability Testing
+UX/UI,Information Architecture
+UX/UI,Interaction Design
+UX/UI,Visual Design
+UX/UI,Design Systems
+UX/UI,Figma
+UX/UI,Sketch
+UX/UI,Adobe XD
+UX/UI,InVision
+UX/UI,Principle
+UX/UI,HTML/CSS
+UX/UI,Responsive Design
+UX/UI,Accessibility
+DevOps,AWS
+DevOps,Azure
+DevOps,Google Cloud Platform
+DevOps,Docker
+DevOps,Kubernetes
+DevOps,Jenkins
+DevOps,GitLab CI/CD
+DevOps,GitHub Actions
+DevOps,Terraform
+DevOps,Ansible
+DevOps,Chef
+DevOps,Puppet
+DevOps,Monitoring
+DevOps,Prometheus
+DevOps,Grafana
+DevOps,ELK Stack
+DevOps,Linux
+DevOps,Shell Scripting
+DevOps,Python
+DevOps,Infrastructure as Code
+DevOps,Container Orchestration
+DevOps,Microservices
+DevOps,Security
