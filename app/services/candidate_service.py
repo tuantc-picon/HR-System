@@ -20,6 +20,30 @@ class CandidateService(BaseService[Candidate]):
     def __init__(self):
         super().__init__(Candidate)
 
+    def get_all(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[Candidate]:
+        """Get all candidates with optional filtering (excluding soft deleted)"""
+        query = db.query(self.model).filter(self.model.deleted_at.is_(None))
+
+        if filters:
+            for field, value in filters.items():
+                if value is not None and hasattr(self.model, field):
+                    if field in ["first_name", "last_name", "email"]:
+                        # Use ILIKE for case-insensitive partial matching on text fields
+                        query = query.filter(
+                            getattr(self.model, field).ilike(f"%{value}%")
+                        )
+                    else:
+                        # Exact match for other fields
+                        query = query.filter(getattr(self.model, field) == value)
+
+        return query.offset(skip).limit(limit).all()
+
     def create_candidate(
         self, db: Session, candidate_data: CandidateCreateRequest
     ) -> Candidate:

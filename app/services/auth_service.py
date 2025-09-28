@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, Tuple
 import jwt
+from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -148,7 +149,10 @@ class AuthService:
 
         except jwt.ExpiredSignatureError:
             return None
-        except jwt.JWTError:
+        except InvalidTokenError:
+            return None
+        except Exception:
+            # Catch any other JWT-related errors
             return None
 
     def blacklist_token(self, db: Session, jti: str):

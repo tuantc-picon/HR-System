@@ -1,13 +1,17 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 from core.common.database import get_db_session
 from services.application_service import application_service
 from schema.request.application_schemas import (
     ApplicationCreateRequest,
     ApplicationUpdateRequest,
 )
-from schema.response.application_schemas import ApplicationResponse
+from schema.response.application_schemas import (
+    ApplicationResponse,
+    ApplicationDetailResponse,
+)
 
 router = APIRouter()
 
@@ -25,22 +29,52 @@ def create_application(
 
 @router.get("/", response_model=List[ApplicationResponse])
 def get_applications(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db_session)
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[int] = None,
+    job_id: Optional[int] = None,
+    candidate_id: Optional[int] = None,
+    resume_id: Optional[int] = None,
+    created_after: Optional[datetime] = None,
+    created_before: Optional[datetime] = None,
+    db: Session = Depends(get_db_session),
 ):
-    """Get all applications"""
-    applications = application_service.get_all(db, skip=skip, limit=limit)
+    """Get all applications with optional filtering"""
+    # Build filter parameters
+    filters = {}
+    if status is not None:
+        filters["status"] = status
+    if job_id is not None:
+        filters["job_id"] = job_id
+    if candidate_id is not None:
+        filters["candidate_id"] = candidate_id
+    if resume_id is not None:
+        filters["resume_id"] = resume_id
+
+    # Date range filtering will be handled separately in the service
+    date_filters = {}
+    if created_after:
+        date_filters["created_after"] = created_after
+    if created_before:
+        date_filters["created_before"] = created_before
+
+    applications = application_service.get_all(
+        db, skip=skip, limit=limit, filters=filters, date_filters=date_filters
+    )
     return applications
 
 
-@router.get("/{application_id}", response_model=ApplicationResponse)
-def get_application(application_id: int, db: Session = Depends(get_db_session)):
-    """Get application by ID"""
-    application = application_service.get_by_id(db, application_id)
-    if not application:
+@router.get("/{application_id}", response_model=ApplicationDetailResponse)
+def get_application_details(application_id: int, db: Session = Depends(get_db_session)):
+    """Get comprehensive application details including job, candidate, and resume information"""
+    application_details = application_service.get_application_with_details(
+        db, application_id
+    )
+    if not application_details:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
         )
-    return application
+    return application_details
 
 
 @router.put("/{application_id}", response_model=ApplicationResponse)

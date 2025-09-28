@@ -16,14 +16,15 @@ from api.v1.routers import router
 from core.common.exceptions import HRSystemBaseException
 
 app = FastAPI(
-    title="Anyjob Corporation service",
+    title="HR-System service",
     swagger_ui_parameters={
         "persistAuthorization": True,
     },
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.CORS_ALLOWED_ORIGINS,
+    # allow_origins=config.CORS_ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

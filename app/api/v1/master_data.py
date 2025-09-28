@@ -97,6 +97,66 @@ def get_master_data_by_type(
         )
 
 
+@router.get("/entities")
+def get_master_data_by_entities(
+    entities: str = Query(
+        ...,
+        description="Comma-separated list of entity types (e.g., 'skills,job_roles,certificates')",
+    ),
+    db: Session = Depends(get_db_session),
+) -> Dict[str, Any]:
+    """Get specific master data entities by comma-separated list"""
+    try:
+        # Parse the comma-separated entities
+        entity_list = [entity.strip().lower() for entity in entities.split(",")]
+
+        # Validate entity types
+        valid_entities = {
+            "skills": MasterDataTypeEnum.SKILLS,
+            "job_roles": MasterDataTypeEnum.JOB_ROLES,
+            "certificates": MasterDataTypeEnum.CERTIFICATES,
+            "user_roles": MasterDataTypeEnum.USER_ROLES,
+        }
+
+        invalid_entities = [
+            entity for entity in entity_list if entity not in valid_entities
+        ]
+        if invalid_entities:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid entity types: {', '.join(invalid_entities)}. Valid types are: {', '.join(valid_entities.keys())}",
+            )
+
+        # Fetch data for requested entities
+        result = {}
+
+        for entity in entity_list:
+            data_type = valid_entities[entity]
+            data = master_data_service.get_master_data_by_type(db, data_type)
+
+            # Convert to appropriate response models based on data type
+            if data_type == MasterDataTypeEnum.CERTIFICATES:
+                result[entity] = [
+                    CertificateResponse.model_validate(item) for item in data
+                ]
+            elif data_type == MasterDataTypeEnum.JOB_ROLES:
+                result[entity] = [JobRoleResponse.model_validate(item) for item in data]
+            elif data_type == MasterDataTypeEnum.SKILLS:
+                result[entity] = [SkillResponse.model_validate(item) for item in data]
+            elif data_type == MasterDataTypeEnum.USER_ROLES:
+                result[entity] = [RoleResponse.model_validate(item) for item in data]
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve master data entities: {str(e)}",
+        )
+
+
 @router.post("/populate-from-csv")
 def populate_master_data_from_csv(db: Session = Depends(get_db_session)):
     """Populate master data from CSV files"""

@@ -13,15 +13,45 @@ from model.job.job_requirement_black_lists import JobRequirementBlackList
 from model.job.job_requirement_skills import JobRequirementSkill
 from model.job.job_skills import JobSkill
 from model.master.black_lists import BlackList
+from model.application.applications import Application
+from model.candidate.candidates import Candidate
+from model.candidate.resumes import Resume
 from services.base_service import BaseService
+from services.file_upload_service import file_upload_service
 from schema.request.job_schemas import JobCreateRequest, JobUpdateRequest
+from schema.response.job_schemas import ResumeFileInfo, ApplicationResumeInfo
 from core.common.exceptions import HRSystemBaseException
 from starlette import status
+from config import UPLOAD_CLOUD_TARGET
 
 
 class JobService(BaseService[Job]):
     def __init__(self):
         super().__init__(Job)
+
+    def get_all(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[Job]:
+        """Get all jobs with optional filtering (excluding soft deleted)"""
+        query = db.query(self.model).filter(self.model.deleted_at.is_(None))
+
+        if filters:
+            for field, value in filters.items():
+                if value is not None and hasattr(self.model, field):
+                    if field == "title":
+                        # Use ILIKE for case-insensitive partial matching on title
+                        query = query.filter(
+                            getattr(self.model, field).ilike(f"%{value}%")
+                        )
+                    else:
+                        # Exact match for other fields
+                        query = query.filter(getattr(self.model, field) == value)
+
+        return query.offset(skip).limit(limit).all()
 
     def create_job(self, db: Session, job_data: JobCreateRequest) -> Dict[str, Any]:
         """Create a new job with requirements and selected skills"""
@@ -408,17 +438,27 @@ class JobService(BaseService[Job]):
         )
 
     def get_all_with_details(
-        self, db: Session, skip: int = 0, limit: int = 100
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 100,
+        filters: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """Get all jobs with job role and requirements details using separate queries"""
-        # Get jobs first
-        jobs = (
-            db.query(Job)
-            .filter(Job.deleted_at.is_(None))
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        # Get jobs first with filtering
+        query = db.query(Job).filter(Job.deleted_at.is_(None)).order_by(Job.id.desc())
+
+        if filters:
+            for field, value in filters.items():
+                if value is not None and hasattr(Job, field):
+                    if field == "title":
+                        # Use ILIKE for case-insensitive partial matching on title
+                        query = query.filter(getattr(Job, field).ilike(f"%{value}%"))
+                    else:
+                        # Exact match for other fields
+                        query = query.filter(getattr(Job, field) == value)
+
+        jobs = query.offset(skip).limit(limit).all()
 
         if not jobs:
             return []
@@ -620,6 +660,96 @@ class JobService(BaseService[Job]):
             )
             .all()
         )
+
+    def _process_resume_file_info(self, resume: Resume) -> ResumeFileInfo:
+        """Process resume file information based on storage type"""
+        file_url = None
+        storage_type = "local"
+
+        # Determine storage type based on file path
+        if resume.file_path.startswith("http"):
+            # Google Drive file (has web URL)
+            storage_type = "google_drive"
+            file_url = resume.file_path
+        else:
+            # Local file
+            storage_type = "local"
+            # For local files, we could construct a full URL if needed
+            # file_url = f"http://localhost:8000/uploads/{resume.file_path}"
+            file_url = f"/uploads/{resume.file_path}"
+
+        return ResumeFileInfo(
+            id=resume.id,
+            candidate_id=resume.candidate_id,
+            file_path=resume.file_path,
+            file_url=file_url,
+            storage_type=storage_type,
+            note=resume.note,
+            created_at=resume.created_at,
+        )
+
+    def get_job_with_resumes(
+        self, db: Session, job_id: int
+    ) -> Optional[Dict[str, Any]]:
+        """Get job with full details including resume files from applications"""
+        # Get basic job details first
+        job_details = self.get_job_with_details(db, job_id)
+        if not job_details:
+            return None
+
+        # Get applications for this job with candidate and resume information
+        applications = (
+            db.query(Application)
+            .join(Candidate, Application.candidate_id == Candidate.id)
+            .join(Resume, Application.resume_id == Resume.id)
+            .filter(
+                and_(
+                    Application.job_id == job_id,
+                    Application.deleted_at.is_(None),
+                    Candidate.deleted_at.is_(None),
+                    Resume.deleted_at.is_(None),
+                )
+            )
+            .all()
+        )
+
+        # Process applications with resume information
+        applications_with_resumes = []
+        for app in applications:
+            # Get candidate info
+            candidate = (
+                db.query(Candidate)
+                .filter(
+                    and_(
+                        Candidate.id == app.candidate_id, Candidate.deleted_at.is_(None)
+                    )
+                )
+                .first()
+            )
+
+            # Get resume info
+            resume = (
+                db.query(Resume)
+                .filter(and_(Resume.id == app.resume_id, Resume.deleted_at.is_(None)))
+                .first()
+            )
+
+            if candidate and resume:
+                resume_info = self._process_resume_file_info(resume)
+
+                app_resume_info = ApplicationResumeInfo(
+                    application_id=app.id,
+                    candidate_id=candidate.id,
+                    candidate_name=f"{candidate.first_name} {candidate.last_name}",
+                    application_status=app.status,
+                    resume=resume_info,
+                )
+                applications_with_resumes.append(app_resume_info)
+
+        # Add resume information to job details
+        job_details["applications_with_resumes"] = applications_with_resumes
+
+        return job_details
 
 
 # Create singleton instance

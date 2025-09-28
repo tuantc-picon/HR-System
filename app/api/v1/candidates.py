@@ -79,10 +79,27 @@ async def create_candidate_with_cv(
 
 @router.get("/", response_model=List[CandidateResponse])
 def get_candidates(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db_session)
+    skip: int = 0,
+    limit: int = 100,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    email: Optional[str] = None,
+    phone_number: Optional[str] = None,
+    db: Session = Depends(get_db_session),
 ):
-    """Get all candidates"""
-    candidates = candidate_service.get_all(db, skip=skip, limit=limit)
+    """Get all candidates with optional filtering"""
+    # Build filter parameters
+    filters = {}
+    if first_name:
+        filters["first_name"] = first_name
+    if last_name:
+        filters["last_name"] = last_name
+    if email:
+        filters["email"] = email
+    if phone_number:
+        filters["phone_number"] = phone_number
+
+    candidates = candidate_service.get_all(db, skip=skip, limit=limit, filters=filters)
     return candidates
 
 
